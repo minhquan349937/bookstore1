@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # API Gateway Service
+  api_gateway:
+    build:
+      context: .
+      dockerfile: ./bookstore_microservices/api_gateway/Dockerfile
+    container_name: bookstore_api_gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+    volumes:
+      - ./bookstore_microservices/api_gateway:/app
+    networks:
+      - bookstore_network
+    depends_on:
+      - book_service
+      - customer_service
+      - staff_service
+      - order_service
+      - cart_service
+    command: python manage.py runserver 0.0.0.0:8000
+
+  # Book Service
+  book_service:
+    build:
+      context: .
+      dockerfile: ./bookstore_microservices/book_service/Dockerfile
+    container_name: bookstore_book_service
+    ports:
+      - "8001:8001"
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+    volumes:
+      - ./bookstore_microservices/book_service:/app
+    networks:
+      - bookstore_network
+    command: python manage.py runserver 0.0.0.0:8001
+
+  # Customer Service
+  customer_service:
+    build:
+      context: .
+      dockerfile: ./bookstore_microservices/customer_service/Dockerfile
+    container_name: bookstore_customer_service
+    ports:
+      - "8002:8002"
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+    volumes:
+      - ./bookstore_microservices/customer_service:/app
+    networks:
+      - bookstore_network
+    command: python manage.py runserver 0.0.0.0:8002
+
+  # Staff Service
+  staff_service:
+    build:
+      context: .
+      dockerfile: ./bookstore_microservices/staff_service/Dockerfile
+    container_name: bookstore_staff_service
+    ports:
+      - "8003:8003"
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+    volumes:
+      - ./bookstore_microservices/staff_service:/app
+    networks:
+      - bookstore_network
+    command: python manage.py runserver 0.0.0.0:8003
+
+  # Order Service
+  order_service:
+    build:
+      context: .
+      dockerfile: ./bookstore_microservices/order_service/Dockerfile
+    container_name: bookstore_order_service
+    ports:
+      - "8004:8004"
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+    volumes:
+      - ./bookstore_microservices/order_service:/app
+    networks:
+      - bookstore_network
+    command: python manage.py runserver 0.0.0.0:8004
+
+  # Cart Service
+  cart_service:
+    build:
+      context: .
+      dockerfile: ./bookstore_microservices/cart_service/Dockerfile
+    container_name: bookstore_cart_service
+    ports:
+      - "8005:8005"
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+    volumes:
+      - ./bookstore_microservices/cart_service:/app
+    networks:
+      - bookstore_network
+    command: python manage.py runserver 0.0.0.0:8005
+
+  # Frontend Service
+  frontend:
+    image: python:3.11-slim
+    container_name: bookstore_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app/frontend
+    working_dir: /app/frontend
+    networks:
+      - bookstore_network
+    command: python -m http.server 3000
+
+networks:
+  bookstore_network:
+    driver: bridge

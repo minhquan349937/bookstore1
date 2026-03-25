@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cửa hàng Sách - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">📚 BookStore</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/index.html">🏠 Trang Chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cart.html">🛒 Giỏ Hàng<span id="cartCount" class="badge bg-primary ms-2">0</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <div id="navbarRight"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alertContainer"></div>
+
+    <div class="container-fluid py-5">
+        <!-- SEARCH BAR -->
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm sách...">
+                <select id="sortSelect" class="form-select" style="max-width: 150px;">
+                    <option value="newest">Mới nhất</option>
+                    <option value="price_asc">Giá: Thấp -&gt; Cao</option>
+                    <option value="price_desc">Giá: Cao -&gt; Thấp</option>
+                    <option value="popular">Phổ biến</option>
+                </select>
+                <button class="btn btn-primary" onclick="searchBooks()">🔍 Tìm Kiếm</button>
+            </div>
+        </div>
+
+        <!-- BOOKS GRID -->
+        <div id="booksContainer" class="row g-4">
+            <div class="col-12 loading-container">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- PAGINATION -->
+        <div id="paginationContainer" class="pagination"></div>
+    </div>
+
+    <footer class="bg-light text-center py-4 mt-5 border-top">
+        <p class="text-muted">© 2024 BookStore - Cửa hàng sách trực tuyến</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        let currentPage = 1;
+        let isSearching = false;
+        let searchQuery = '';
+        let sortBy = 'newest';
+
+        // Load sách khi page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadBooks();
+            updateCartCount();
+        });
+
+        // Hàm load danh sách sách
+        async function loadBooks(page = 1) {
+            const container = document.getElementById('booksContainer');
+            container.innerHTML = '<div class="col-12 loading-container"><div class="spinner"></div></div>';
+
+            try {
+                let response;
+
+                if (isSearching && searchQuery) {
+                    response = await API.searchBooks(searchQuery, sortBy, page);
+                } else {
+                    response = await API.getBooks(page, 12);
+                }
+
+                const books = response.results || response;
+                const totalPages = response.total_pages || 1;
+
+                if (!books || books.length === 0) {
+                    container.innerHTML = '<div class="col-12 text-center text-muted py-5">Không tìm thấy sách nào.</div>';
+                    return;
+                }
+
+                // Render books
+                let html = '';
+                books.forEach(book => {
+                    const stock = book.stock || 0;
+                    const stockClass = stock === 0 ? 'out-of-stock' : '';
+                    const stockText = stock === 0 ? 'Hết hàng' : `Còn ${stock} cuốn`;
+
+                    html += `
+                        <div class="col-md-6 col-lg-4 col-xl-3">
+                            <div class="book-card" onclick="navigateToDetail(${book.id})">
+                                <div class="book-image">
+                                    ${book.cover_image ? `<img src="${book.cover_image}" alt="${book.title}">` : '📖'}
+                                </div>
+                                <div class="book-info">
+                                    <div class="book-title" title="${book.title}">${book.title}</div>
+                                    <div class="book-author">Tác giả: ${book.author || 'Không rõ'}</div>
+                                    <div class="book-price">${formatPrice(book.price)}</div>
+                                    <div class="book-stock ${stockClass}">${stockText}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+                currentPage = page;
+
+                // Render pagination
+                renderPagination(totalPages, page);
+
+            } catch (error) {
+                container.innerHTML = `<div class="col-12 text-center text-danger py-5">Lỗi tải sách: ${error.message}</div>`;
+            }
+        }
+
+        // Hàm tìm sách
+        async function searchBooks() {
+            searchQuery = document.getElementById('searchInput').value.trim();
+            sortBy = document.getElementById('sortSelect').value;
+
+            if (!searchQuery) {
+                isSearching = false;
+                await loadBooks(1);
+                return;
+            }
+
+            isSearching = true;
+            await loadBooks(1);
+        }
+
+        // Xử lý Enter key
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchBooks();
+            }
+        });
+
+        // Cập nhật sort khi thay đổi
+        document.getElementById('sortSelect').addEventListener('change', () => {
+            if (isSearching && searchQuery) {
+                searchBooks();
+            }
+        });
+
+        // Render pagination
+        function renderPagination(totalPages, currentPageNum) {
+            const container = document.getElementById('paginationContainer');
+            let html = '';
+
+            // Previous button
+            if (currentPageNum > 1) {
+                html += `<button onclick="loadBooks(${currentPageNum - 1})">← Trước</button>`;
+            }
+
+            // Page buttons
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPageNum) {
+                    html += `<button class="active" disabled>${i}</button>`;
+                } else if (i <= 3 || i >= totalPages - 2 || (i >= currentPageNum - 1 && i <= currentPageNum + 1)) {
+                    html += `<button onclick="loadBooks(${i})">${i}</button>`;
+                } else if (i === 4 || i === totalPages - 3) {
+                    html += `<span>...</span>`;
+                }
+            }
+
+            // Next button
+            if (currentPageNum < totalPages) {
+                html += `<button onclick="loadBooks(${currentPageNum + 1})">Tiếp →</button>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Cập nhật số lượng giỏ hàng
+        function updateCartCount() {
+            const customerId = AuthManager.getCustomerId();
+            if (!customerId) {
+                document.getElementById('cartCount').textContent = '0';
+                return;
+            }
+
+            API.getCart(customerId).then(cart => {
+                document.getElementById('cartCount').textContent = cart.total_items || 0;
+            }).catch(() => {
+                document.getElementById('cartCount').textContent = '0';
+            });
+        }
+    </script>
+</body>
+</html>

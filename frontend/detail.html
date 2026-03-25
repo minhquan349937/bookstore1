@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết sách - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">📚 BookStore</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/index.html">🏠 Trang Chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cart.html">🛒 Giỏ Hàng<span id="cartCount" class="badge bg-primary ms-2">0</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <div id="navbarRight"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alertContainer"></div>
+
+    <div class="container-fluid py-5">
+        <div id="detailContainer" class="loading-container">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <footer class="bg-light text-center py-4 mt-5 border-top">
+        <p class="text-muted">© 2024 BookStore - Cửa hàng sách trực tuyến</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        let bookId = null;
+        let bookData = null;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            bookId = getQueryParam('id');
+
+            if (!bookId) {
+                document.getElementById('detailContainer').innerHTML = 
+                    '<div class="text-danger text-center py-5">Không tìm thấy sách.</div>';
+                return;
+            }
+
+            await loadBookDetail();
+            updateCartCount();
+        });
+
+        async function loadBookDetail() {
+            try {
+                bookData = await API.getBookById(bookId);
+                renderDetail();
+            } catch (error) {
+                document.getElementById('detailContainer').innerHTML = 
+                    `<div class="text-danger text-center py-5">Lỗi tải sách: ${error.message}</div>`;
+            }
+        }
+
+        function renderDetail() {
+            const stock = bookData.stock || 0;
+            const stockClass = stock === 0 ? 'out-of-stock' : '';
+            const stockText = stock === 0 ? '❌ Hết hàng' : `✅ Còn ${stock} cuốn`;
+
+            const html = `
+                <div class="detail-container">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="detail-image">
+                                ${bookData.cover_image ? `<img src="${bookData.cover_image}" alt="${bookData.title}">` : '📖'}
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="detail-info">
+                                <h1>${bookData.title}</h1>
+                                <h3>${bookData.author || 'Tác giả chưa xác định'}</h3>
+                                <div class="detail-price">${formatPrice(bookData.price)}</div>
+                                <div class="detail-stock ${stockClass}">${stockText}</div>
+
+                                <div class="detail-meta">
+                                    <div><strong>Nhà xuất bản:</strong> ${bookData.publisher || 'Chưa xác định'}</div>
+                                    <div><strong>Thể loại:</strong> ${bookData.genre || 'Chưa xác định'}</div>
+                                    <div><strong>Năm xuất bản:</strong> ${bookData.year || 'Chưa xác định'}</div>
+                                    <div><strong>Số trang:</strong> ${bookData.pages || 'Chưa xác định'}</div>
+                                    <div><strong>ISBN:</strong> ${bookData.isbn || 'Chưa xác định'}</div>
+                                </div>
+
+                                <div class="detail-description">
+                                    <strong>Mô tả:</strong>
+                                    <p>${bookData.description || 'Chưa có mô tả.'}</p>
+                                </div>
+
+                                <div class="quantity-selector">
+                                    <label><strong>Số lượng:</strong></label>
+                                    <button type="button" onclick="decreaseQuantity()">−</button>
+                                    <input type="number" id="quantity" value="1" min="1" max="${stock || 100}">
+                                    <button type="button" onclick="increaseQuantity()">+</button>
+                                </div>
+
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary" onclick="addToCart()" ${stock === 0 ? 'disabled' : ''}>
+                                        🛒 Thêm vào giỏ hàng
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="window.location.href='/index.html'">
+                                        ← Quay lại
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('detailContainer').innerHTML = html;
+        }
+
+        function decreaseQuantity() {
+            const input = document.getElementById('quantity');
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
+
+        function increaseQuantity() {
+            const input = document.getElementById('quantity');
+            const max = parseInt(input.max) || 100;
+            if (parseInt(input.value) < max) {
+                input.value = parseInt(input.value) + 1;
+            }
+        }
+
+        async function addToCart() {
+            if (!checkAuth()) return;
+
+            const customerId = AuthManager.getCustomerId();
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (!customerId) {
+                showAlert('Vui lòng đăng nhập trước!', 'error');
+                return;
+            }
+
+            try {
+                const btn = event.target;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Đang thêm...';
+
+                await API.addToCart(customerId, bookId, quantity, bookData.price);
+
+                showAlert(`Đã thêm ${quantity} cuốn "${bookData.title}" vào giỏ hàng!`, 'success');
+                updateCartCount();
+
+                // Reset quantity
+                document.getElementById('quantity').value = 1;
+                btn.disabled = false;
+                btn.innerHTML = '🛒 Thêm vào giỏ hàng';
+
+            } catch (error) {
+                showAlert(error.message || 'Thêm vào giỏ hàng thất bại!', 'error');
+                const btn = event.target;
+                btn.disabled = false;
+                btn.innerHTML = '🛒 Thêm vào giỏ hàng';
+            }
+        }
+
+        function updateCartCount() {
+            const customerId = AuthManager.getCustomerId();
+            if (!customerId) {
+                document.getElementById('cartCount').textContent = '0';
+                return;
+            }
+
+            API.getCart(customerId).then(cart => {
+                document.getElementById('cartCount').textContent = cart.total_items || 0;
+            }).catch(() => {
+                document.getElementById('cartCount').textContent = '0';
+            });
+        }
+    </script>
+</body>
+</html>

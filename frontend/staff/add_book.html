@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Sách Mới - BookStore Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .form-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 700px;
+            margin: 30px auto;
+        }
+
+        .form-card h2 {
+            margin-bottom: 30px;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .form-section h5 {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+            color: white;
+            text-decoration: none;
+        }
+
+        .form-help {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: #343a40;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">📚 BookStore Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/staff/dashboard.html">📊 Bảng Điều Khiển</a>
+                    </li>
+                    <li class="nav-item">
+                        <div id="navbarRight"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alertContainer"></div>
+
+    <div class="form-card">
+        <h2>➕ Thêm Sách Mới</h2>
+        <form id="addBookForm">
+            <!-- Thông tin cơ bản -->
+            <div class="form-section">
+                <h5>📖 Thông Tin Cơ Bản</h5>
+                <div class="form-group">
+                    <label class="form-label">Tên sách *</label>
+                    <input type="text" id="title" class="form-control" placeholder="Nhập tên sách" required>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label">Tác giả *</label>
+                        <input type="text" id="author" class="form-control" placeholder="Nhập tên tác giả" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nhà xuất bản *</label>
+                        <input type="text" id="publisher" class="form-control" placeholder="Nhập nhà xuất bản" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin chi tiết -->
+            <div class="form-section">
+                <h5>ℹ️ Thông Tin Chi Tiết</h5>
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label class="form-label">Thể loại *</label>
+                        <input type="text" id="genre" class="form-control" placeholder="VD: Tiểu thuyết" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Năm xuất bản *</label>
+                        <input type="number" id="year" class="form-control" placeholder="VD: 2024" required min="1900" max="2100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số trang *</label>
+                        <input type="number" id="pages" class="form-control" placeholder="VD: 300" required min="1">
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label">ISBN</label>
+                        <input type="text" id="isbn" class="form-control" placeholder="Mã ISBN">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">URL Cover (tuỳ chọn)</label>
+                        <input type="url" id="cover_image" class="form-control" placeholder="https://...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Giá & Hàng -->
+            <div class="form-section">
+                <h5>💰 Giá & Kho Hàng</h5>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label">Giá (VNĐ) *</label>
+                        <input type="number" id="price" class="form-control" placeholder="VD: 150000" required min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số lượng tồn kho *</label>
+                        <input type="number" id="stock" class="form-control" placeholder="VD: 50" required min="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="form-section">
+                <h5>📝 Mô Tả</h5>
+                <div class="form-group">
+                    <label class="form-label">Mô tả chi tiết (tuỳ chọn)</label>
+                    <textarea id="description" class="form-control" rows="4" placeholder="Nhập mô tả sách..."></textarea>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn-submit" id="submitBtn">✓ Thêm Sách</button>
+                <a href="/staff/dashboard.html" class="btn-cancel">← Hủy</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/staff-common.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!checkStaffAuth()) return;
+        });
+
+        document.getElementById('addBookForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const bookData = {
+                title: document.getElementById('title').value,
+                author: document.getElementById('author').value,
+                publisher: document.getElementById('publisher').value,
+                genre: document.getElementById('genre').value,
+                year: parseInt(document.getElementById('year').value),
+                pages: parseInt(document.getElementById('pages').value),
+                isbn: document.getElementById('isbn').value || null,
+                cover_image: document.getElementById('cover_image').value || null,
+                price: parseFloat(document.getElementById('price').value),
+                stock: parseInt(document.getElementById('stock').value),
+                description: document.getElementById('description').value || null
+            };
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Đang thêm...';
+
+            try {
+                await StaffAPI.createBook(bookData);
+                showAlert('Thêm sách thành công!', 'success');
+                setTimeout(() => window.location.href = '/staff/dashboard.html', 1500);
+
+            } catch (error) {
+                showAlert(error.message || 'Thêm sách thất bại!', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '✓ Thêm Sách';
+            }
+        });
+    </script>
+</body>
+</html>

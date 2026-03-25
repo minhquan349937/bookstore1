@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+    <div id="alertContainer"></div>
+
+    <div class="form-container">
+        <h2>📝 Đăng Ký Tài Khoản</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username" class="form-label">Tên đăng nhập</label>
+                <input type="text" id="username" class="form-control" placeholder="Nhập tên đăng nhập" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" class="form-control" placeholder="Nhập email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Mật khẩu</label>
+                <input type="password" id="password" class="form-control" placeholder="Nhập mật khẩu" required>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword" class="form-label">Nhập lại mật khẩu</label>
+                <input type="password" id="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone" class="form-label">Số điện thoại (tuỳ chọn)</label>
+                <input type="tel" id="phone" class="form-control" placeholder="Nhập số điện thoại">
+            </div>
+
+            <div class="form-group">
+                <label for="address" class="form-label">Địa chỉ (tuỳ chọn)</label>
+                <input type="text" id="address" class="form-control" placeholder="Nhập địa chỉ">
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" id="registerBtn">Đăng Ký</button>
+        </form>
+
+        <div class="form-text">
+            Đã có tài khoản? <a href="/login.html">Đăng nhập tại đây</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        // Nếu đã đăng nhập thì chuyển hướng
+        window.addEventListener('DOMContentLoaded', () => {
+            if (AuthManager.isLoggedIn()) {
+                window.location.href = '/index.html';
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const registerBtn = document.getElementById('registerBtn');
+
+            // Kiểm tra mật khẩu khớp
+            if (password !== confirmPassword) {
+                showAlert('Mật khẩu không khớp! Vui lòng kiểm tra lại.', 'error');
+                return;
+            }
+
+            // Kiểm tra mật khẩu có đủ dài
+            if (password.length < 6) {
+                showAlert('Mật khẩu phải có ít nhất 6 ký tự!', 'error');
+                return;
+            }
+
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = '<span class="spinner"></span> Đang đăng ký...';
+
+            try {
+                const response = await API.register(email, password, username, phone, address);
+
+                // Lưu token và thông tin user
+                AuthManager.setToken(response.token);
+                AuthManager.setCustomerId(response.id);
+                AuthManager.setCurrentUser({
+                    username: response.username,
+                    email: response.email
+                });
+
+                showAlert('Đăng ký thành công! Chào mừng bạn đến với BookStore.', 'success');
+                setTimeout(() => window.location.href = '/index.html', 1500);
+
+            } catch (error) {
+                showAlert(error.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại!', 'error');
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = 'Đăng Ký';
+            }
+        });
+    </script>
+</body>
+</html>

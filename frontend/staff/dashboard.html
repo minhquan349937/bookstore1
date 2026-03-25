@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Sách - BookStore Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .admin-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .admin-table table {
+            margin-bottom: 0;
+        }
+
+        .admin-table thead {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .admin-table th {
+            padding: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .admin-table td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .admin-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+
+        .stat-card p {
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-add:hover {
+            opacity: 0.9;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: #343a40;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">📚 BookStore Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/staff/dashboard.html">📊 Bảng Điều Khiển</a>
+                    </li>
+                    <li class="nav-item">
+                        <div id="navbarRight"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alertContainer"></div>
+
+    <div class="container-fluid py-5">
+        <!-- HEADER -->
+        <div class="header-section">
+            <div>
+                <h1>📖 Quản Lý Sách</h1>
+                <p style="margin: 0 0 0 0;">Danh sách toàn bộ sách trong kho</p>
+            </div>
+            <a href="/staff/add_book.html" class="btn-add">➕ Thêm Sách Mới</a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid" id="statsContainer">
+            <div class="stat-card">
+                <p>Tổng số sách</p>
+                <h3 id="totalBooks">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>Sách bán chạy</p>
+                <h3 id="topBooks">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>Hết hàng</p>
+                <h3 id="outOfStock">0</h3>
+            </div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm sách theo tên...">
+            <button class="btn btn-primary" onclick="searchBooks()">🔍 Tìm</button>
+            <button class="btn btn-outline-secondary" onclick="resetSearch()">Xóa</button>
+        </div>
+
+        <!-- BOOKS TABLE -->
+        <div id="booksContainer" class="admin-table">
+            <div class="loading-container" style="min-height: 300px;">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- PAGINATION -->
+        <div id="paginationContainer" class="pagination" style="margin-top: 20px;"></div>
+    </div>
+
+    <footer class="bg-light text-center py-4 mt-5 border-top">
+        <p class="text-muted">© 2024 BookStore Admin - Hệ thống quản lý sách</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/staff-common.js"></script>
+    <script>
+        let allBooks = [];
+        let currentPage = 1;
+        let searchQuery = '';
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!checkStaffAuth()) return;
+            await loadBooks();
+            await loadStats();
+        });
+
+        async function loadBooks(page = 1) {
+            const container = document.getElementById('booksContainer');
+            container.innerHTML = '<div class="loading-container" style="min-height: 300px;"><div class="spinner"></div></div>';
+
+            try {
+                const response = await StaffAPI.getBooks(page, 20);
+                allBooks = response.results || response;
+
+                if (!allBooks || allBooks.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted py-5">Chưa có sách nào trong hệ thống.</div>';
+                    return;
+                }
+
+                let html = `
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">ID</th>
+                                <th style="width: 20%;">Tên Sách</th>
+                                <th style="width: 15%;">Tác Giả</th>
+                                <th style="width: 12%;">Thể Loại</th>
+                                <th style="width: 12%;">Giá</th>
+                                <th style="width: 10%;">Tồn Kho</th>
+                                <th style="width: 26%;">Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                allBooks.forEach(book => {
+                    const stockClass = book.stock === 0 ? 'text-danger fw-bold' : '';
+                    const stockText = book.stock === 0 ? '❌ Hết hàng' : `📦 ${book.stock}`;
+
+                    html += `
+                        <tr>
+                            <td>#${book.id}</td>
+                            <td><strong>${book.title}</strong></td>
+                            <td>${book.author || 'N/A'}</td>
+                            <td>${book.genre || 'N/A'}</td>
+                            <td>${formatPrice(book.price)}</td>
+                            <td class="${stockClass}">${stockText}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="/staff/edit_book.html?id=${book.id}" class="btn btn-sm btn-warning">✏️ Sửa</a>
+                                    <a href="/staff/import_stock.html?id=${book.id}" class="btn btn-sm btn-info">📥 Nhập</a>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteBook(${book.id})">🗑️ Xóa</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+                currentPage = page;
+
+                // Render pagination
+                const totalPages = response.total_pages || 1;
+                renderPagination(totalPages, page);
+
+            } catch (error) {
+                container.innerHTML = `<div class="text-danger text-center py-5">Lỗi tải sách: ${error.message}</div>`;
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await StaffAPI.getStats();
+                
+                document.getElementById('totalBooks').textContent = response.total_books || 0;
+                document.getElementById('topBooks').textContent = response.popular_books || 0;
+                document.getElementById('outOfStock').textContent = response.out_of_stock || 0;
+            } catch (error) {
+                console.error('Lỗi tải stats:', error);
+            }
+        }
+
+        function searchBooks() {
+            searchQuery = document.getElementById('searchInput').value.trim();
+            
+            if (!searchQuery) {
+                loadBooks(1);
+                return;
+            }
+
+            const filtered = allBooks.filter(book => 
+                book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                book.author?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                document.getElementById('booksContainer').innerHTML = 
+                    '<div class="text-center text-muted py-5">Không tìm thấy sách nào.</div>';
+                return;
+            }
+
+            let html = `
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">ID</th>
+                            <th style="width: 20%;">Tên Sách</th>
+                            <th style="width: 15%;">Tác Giả</th>
+                            <th style="width: 12%;">Thể Loại</th>
+                            <th style="width: 12%;">Giá</th>
+                            <th style="width: 10%;">Tồn Kho</th>
+                            <th style="width: 26%;">Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filtered.forEach(book => {
+                const stockClass = book.stock === 0 ? 'text-danger fw-bold' : '';
+                const stockText = book.stock === 0 ? '❌ Hết hàng' : `📦 ${book.stock}`;
+
+                html += `
+                    <tr>
+                        <td>#${book.id}</td>
+                        <td><strong>${book.title}</strong></td>
+                        <td>${book.author || 'N/A'}</td>
+                        <td>${book.genre || 'N/A'}</td>
+                        <td>${formatPrice(book.price)}</td>
+                        <td class="${stockClass}">${stockText}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/staff/edit_book.html?id=${book.id}" class="btn btn-sm btn-warning">✏️ Sửa</a>
+                                <a href="/staff/import_stock.html?id=${book.id}" class="btn btn-sm btn-info">📥 Nhập</a>
+                                <button class="btn btn-sm btn-danger" onclick="deleteBook(${book.id})">🗑️ Xóa</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            document.getElementById('booksContainer').innerHTML = html;
+        }
+
+        function resetSearch() {
+            document.getElementById('searchInput').value = '';
+            searchQuery = '';
+            loadBooks(1);
+        }
+
+        function renderPagination(totalPages, currentPageNum) {
+            const container = document.getElementById('paginationContainer');
+            let html = '';
+
+            if (currentPageNum > 1) {
+                html += `<button onclick="loadBooks(${currentPageNum - 1})">← Trước</button>`;
+            }
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPageNum) {
+                    html += `<button class="active" disabled>${i}</button>`;
+                } else if (i <= 3 || i >= totalPages - 2 || (i >= currentPageNum - 1 && i <= currentPageNum + 1)) {
+                    html += `<button onclick="loadBooks(${i})">${i}</button>`;
+                } else if (i === 4 || i === totalPages - 3) {
+                    html += `<span>...</span>`;
+                }
+            }
+
+            if (currentPageNum < totalPages) {
+                html += `<button onclick="loadBooks(${currentPageNum + 1})">Tiếp →</button>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        async function deleteBook(bookId) {
+            if (!confirm('Bạn chắc chắn muốn xóa sách này?')) return;
+
+            try {
+                await StaffAPI.deleteBook(bookId);
+                showAlert('Xóa sách thành công!', 'success');
+                loadBooks(currentPage);
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

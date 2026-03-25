@@ -1,0 +1,20 @@
+{
+  "api": {
+    "base_url": "http://localhost:8000/api",
+    "customer_service": "http://localhost:8002/api",
+    "book_service": "http://localhost:8001/api",
+    "cart_service": "http://localhost:8005/api"
+  },
+  "features": {
+    "search": true,
+    "filter": true,
+    "pagination": true,
+    "favorites": true,
+    "reviews": false,
+    "ratings": false
+  },
+  "items_per_page": 12,
+  "timeout": 5000,
+  "cache_enabled": true,
+  "cache_duration": 3600
+}

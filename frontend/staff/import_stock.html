@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập Hàng - BookStore Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .import-container {
+            max-width: 500px;
+            margin: 80px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .import-container h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #17a2b8;
+            font-weight: 700;
+        }
+
+        .import-container p {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+
+        .book-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .book-info h5 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .book-info p {
+            margin: 5px 0;
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .stock-section {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #b3d9ff;
+        }
+
+        .stock-section p {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .stock-current {
+            font-size: 1.5rem;
+            color: #17a2b8;
+            font-weight: 700;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .quantity-input:focus {
+            border-color: #17a2b8;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.25);
+        }
+
+        .quantity-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .quantity-btn:hover {
+            border-color: #17a2b8;
+            background: #f0f9ff;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn-submit {
+            flex: 1;
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #6c757d;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+            color: white;
+            text-decoration: none;
+        }
+
+        .info-text {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: #343a40;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">📚 BookStore Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/staff/dashboard.html">📊 Bảng Điều Khiển</a>
+                    </li>
+                    <li class="nav-item">
+                        <div id="navbarRight"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alertContainer"></div>
+
+    <div class="import-container">
+        <h2>📥 Nhập Hàng</h2>
+        <p>Cộng thêm sách vào kho hàng</p>
+
+        <div id="bookInfo" class="loading-container">
+            <div class="spinner"></div>
+        </div>
+
+        <form id="importForm">
+            <div class="info-text">
+                <strong>ℹ️ Hướng dẫn:</strong> Nhập số lượng sách cần thêm vào kho, sau đó nhấn "Lưu".
+            </div>
+
+            <div class="form-group">
+                <label>Số lượng cần nhập *</label>
+                <div class="input-group">
+                    <button type="button" class="quantity-btn" onclick="decreaseQuantity()">−</button>
+                    <input type="number" id="quantity" class="quantity-input" value="1" min="1" max="1000" required>
+                    <button type="button" class="quantity-btn" onclick="increaseQuantity()">+</button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn-submit" id="submitBtn">💾 Lưu</button>
+                <a href="/staff/dashboard.html" class="btn-cancel">← Hủy</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/staff-common.js"></script>
+    <script>
+        let bookId = null;
+        let bookData = null;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!checkStaffAuth()) return;
+
+            bookId = getQueryParam('id');
+            if (!bookId) {
+                document.getElementById('bookInfo').innerHTML =
+                    '<div class="text-danger">Không tìm thấy sách.</div>';
+                return;
+            }
+
+            await loadBook();
+        });
+
+        async function loadBook() {
+            try {
+                bookData = await StaffAPI.getBookById(bookId);
+
+                let html = `
+                    <div class="book-info">
+                        <h5>${bookData.title}</h5>
+                        <p><strong>Tác giả:</strong> ${bookData.author || 'N/A'}</p>
+                        <p><strong>Giá:</strong> ${formatPrice(bookData.price)}</p>
+                        <p><strong>Thể loại:</strong> ${bookData.genre || 'N/A'}</p>
+                    </div>
+
+                    <div class="stock-section">
+                        <p>Tồn kho hiện tại</p>
+                        <p class="stock-current">📦 ${bookData.stock} cuốn</p>
+                    </div>
+                `;
+
+                document.getElementById('bookInfo').innerHTML = html;
+
+            } catch (error) {
+                document.getElementById('bookInfo').innerHTML =
+                    `<div class="text-danger">Lỗi tải sách: ${error.message}</div>`;
+            }
+        }
+
+        function decreaseQuantity() {
+            const input = document.getElementById('quantity');
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
+
+        function increaseQuantity() {
+            const input = document.getElementById('quantity');
+            input.value = parseInt(input.value) + 1;
+        }
+
+        document.getElementById('importForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (!quantity || quantity < 1) {
+                showAlert('Vui lòng nhập số lượng hợp lệ!', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Đang lưu...';
+
+            try {
+                await StaffAPI.staffIncreaseStock(bookId, quantity);
+                
+                showAlert(`Nhập hàng thành công! Đã thêm ${quantity} cuốn.`, 'success');
+                setTimeout(() => window.location.href = '/staff/dashboard.html', 1500);
+
+            } catch (error) {
+                showAlert(error.message || 'Nhập hàng thất bại!', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '💾 Lưu';
+            }
+        });
+    </script>
+</body>
+</html>

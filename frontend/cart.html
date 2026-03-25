@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ Hàng - BookStore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">📚 BookStore</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/index.html">🏠 Trang Chủ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/cart.html">🛒 Giỏ Hàng<span id="cartCount" class="badge bg-primary ms-2">0</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <div id="navbarRight"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alertContainer"></div>
+
+    <div class="container-fluid py-5">
+        <h2 class="mb-4">🛒 Giỏ Hàng Của Bạn</h2>
+
+        <div id="cartContainer" class="loading-container">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <footer class="bg-light text-center py-4 mt-5 border-top">
+        <p class="text-muted">© 2024 BookStore - Cửa hàng sách trực tuyến</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        let cartData = null;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth()) return;
+            await loadCart();
+        });
+
+        async function loadCart() {
+            const customerId = AuthManager.getCustomerId();
+
+            if (!customerId) {
+                document.getElementById('cartContainer').innerHTML = 
+                    '<div class="text-danger text-center py-5">Vui lòng đăng nhập để xem giỏ hàng.</div>';
+                return;
+            }
+
+            try {
+                cartData = await API.getCart(customerId);
+                renderCart();
+            } catch (error) {
+                document.getElementById('cartContainer').innerHTML = 
+                    `<div class="text-danger text-center py-5">Lỗi tải giỏ hàng: ${error.message}</div>`;
+            }
+        }
+
+        function renderCart() {
+            const items = cartData.items || [];
+
+            if (items.length === 0) {
+                document.getElementById('cartContainer').innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="empty-cart-icon">🛒</div>
+                        <h5>Giỏ hàng của bạn trống</h5>
+                        <p class="text-muted mb-3">Hãy thêm một số sách để bắt đầu mua sắm!</p>
+                        <a href="/index.html" class="btn btn-primary">← Quay lại cửa hàng</a>
+                    </div>
+                `;
+                document.getElementById('cartCount').textContent = '0';
+                return;
+            }
+
+            let tableHTML = `
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%"></th>
+                            <th style="width: 35%">Tên sách</th>
+                            <th style="width: 15%">Giá</th>
+                            <th style="width: 15%">Số lượng</th>
+                            <th style="width: 15%">Tổng tiền</th>
+                            <th style="width: 15%">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            items.forEach(item => {
+                tableHTML += `
+                    <tr>
+                        <td>📖</td>
+                        <td>
+                            <strong>Sách ID: ${item.book_id}</strong>
+                        </td>
+                        <td>${formatPrice(item.price)}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="decreaseQuantity(${item.id})">−</button>
+                                <input type="number" class="quantity-input" id="qty-${item.id}" value="${item.quantity}" min="1" max="100" disabled>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="increaseQuantity(${item.id})">+</button>
+                            </div>
+                        </td>
+                        <td><strong>${formatPrice(item.subtotal)}</strong></td>
+                        <td>
+                            <button class="remove-btn" onclick="removeFromCart(${item.book_id})">🗑️ Xóa</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            const summaryHTML = `
+                <div class="cart-summary">
+                    <h3>💰 Tóm tắt đơn hàng</h3>
+                    <div class="summary-row">
+                        <span>Số sản phẩm:</span>
+                        <strong>${cartData.total_items} sản phẩm</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tiền hàng:</span>
+                        <strong>${formatPrice(cartData.total_price)}</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Phí vận chuyển:</span>
+                        <strong>Miễn phí</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Mã giảm giá:</span>
+                        <strong>Không có</strong>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Tổng cộng:</span>
+                        <strong>${formatPrice(cartData.total_price)}</strong>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-outline-danger w-100" onclick="clearCart()">
+                            🗑️ Xóa giỏ hàng
+                        </button>
+                        <button class="btn btn-success w-100" onclick="checkout()">
+                            ✓ Thanh Toán
+                        </button>
+                    </div>
+                    <a href="/index.html" class="btn btn-outline-primary w-100 mt-2">← Tiếp tục mua sắm</a>
+                </div>
+            `;
+
+            document.getElementById('cartContainer').innerHTML = `
+                <div class="cart-container">
+                    <div class="cart-items">${tableHTML}</div>
+                    ${summaryHTML}
+                </div>
+            `;
+
+            document.getElementById('cartCount').textContent = cartData.total_items;
+        }
+
+        async function decreaseQuantity(itemId) {
+            const customerId = AuthManager.getCustomerId();
+            const currentQty = parseInt(document.getElementById(`qty-${itemId}`).value);
+
+            if (currentQty <= 1) {
+                await removeFromCart(cartData.items.find(i => i.id === itemId).book_id);
+                return;
+            }
+
+            try {
+                const item = cartData.items.find(i => i.id === itemId);
+                await API.updateCartQuantity(customerId, item.book_id, currentQty - 1);
+                await loadCart();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function increaseQuantity(itemId) {
+            const customerId = AuthManager.getCustomerId();
+            const currentQty = parseInt(document.getElementById(`qty-${itemId}`).value);
+
+            if (currentQty >= 100) return;
+
+            try {
+                const item = cartData.items.find(i => i.id === itemId);
+                await API.updateCartQuantity(customerId, item.book_id, currentQty + 1);
+                await loadCart();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function removeFromCart(bookId) {
+            if (!confirm('Bạn chắc chắn muốn xóa sách này khỏi giỏ hàng?')) return;
+
+            const customerId = AuthManager.getCustomerId();
+
+            try {
+                await API.removeFromCart(customerId, bookId);
+                showAlert('Đã xóa sách khỏi giỏ hàng!', 'success');
+                await loadCart();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function clearCart() {
+            if (!confirm('Bạn chắc chắn muốn xóa tất cả sách khỏi giỏ hàng?')) return;
+
+            const customerId = AuthManager.getCustomerId();
+
+            try {
+                await API.clearCart(customerId);
+                showAlert('Đã xóa tất cả sách khỏi giỏ hàng!', 'success');
+                await loadCart();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function checkout() {
+            if (!cartData || cartData.items.length === 0) {
+                showAlert('Giỏ hàng trống! Không thể thanh toán.', 'error');
+                return;
+            }
+
+            showAlert(`✓ Thanh toán thành công ${cartData.total_items} sản phẩm với tổng tiền ${formatPrice(cartData.total_price)}. Cảm ơn bạn đã mua sắm!`, 'success');
+
+            // Clear cart sau 2 giây
+            setTimeout(async () => {
+                const customerId = AuthManager.getCustomerId();
+                await API.clearCart(customerId);
+                window.location.href = '/index.html';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

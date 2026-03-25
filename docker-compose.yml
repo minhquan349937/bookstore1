@@ -22,6 +22,8 @@ services:
       - staff_service
       - order_service
       - cart_service
+      - laptop_service
+      - mobile_service
     command: python manage.py runserver 0.0.0.0:8000
 
   # Book Service
@@ -108,6 +110,40 @@ services:
     networks:
       - bookstore_network
     command: python manage.py runserver 0.0.0.0:8005
+
+  # Laptop Service
+  laptop_service:
+    build:
+      context: .
+      dockerfile: ./bookstore_microservices/laptop_service/Dockerfile
+    container_name: bookstore_laptop_service
+    ports:
+      - "8006:8006"
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+    volumes:
+      - ./bookstore_microservices/laptop_service:/app
+    networks:
+      - bookstore_network
+    command: python manage.py runserver 0.0.0.0:8006
+
+  # Mobile Service
+  mobile_service:
+    build:
+      context: .
+      dockerfile: ./bookstore_microservices/mobile_service/Dockerfile
+    container_name: bookstore_mobile_service
+    ports:
+      - "8007:8007"
+    environment:
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+    volumes:
+      - ./bookstore_microservices/mobile_service:/app
+    networks:
+      - bookstore_network
+    command: python manage.py runserver 0.0.0.0:8007
 
   # Frontend Service
   frontend:

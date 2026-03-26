@@ -156,8 +156,10 @@
 
     <div class="container-fluid py-5">
         <!-- HEADER -->
-        <div class="header-section">
-            <h1>💻 Quản Lý Laptop</h1>
+        <div class="header-section" style="color: white;">
+            <div>
+                <h1 style="color: white;">💻 Quản Lý Laptop</h1>
+            </div>
             <a href="/staff/add_laptop.html" class="btn-add">➕ Thêm Laptop Mới</a>
         </div>
 
@@ -223,14 +225,20 @@
 
         async function loadLaptops() {
             try {
+                console.log('Loading laptops from:', `${LAPTOP_API}/laptops/`);
                 const response = await fetch(`${LAPTOP_API}/laptops/`);
-                if (!response.ok) throw new Error('Failed to load laptops');
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 
                 allLaptops = await response.json();
+                console.log('Laptops loaded:', allLaptops.length);
                 updateStats();
                 renderLaptopTable(allLaptops);
             } catch (error) {
+                console.error('Error loading laptops:', error);
                 showAlert('Lỗi tải laptop: ' + error.message, 'danger');
+                // Show empty state
+                const tbody = document.getElementById('laptopTableBody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center">Không thể tải dữ liệu</td></tr>';
             }
         }
 

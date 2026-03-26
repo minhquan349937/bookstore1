@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Điện Thoại - MegaStore Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .admin-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .admin-table table {
+            margin-bottom: 0;
+        }
+
+        .admin-table thead {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .admin-table th {
+            padding: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .admin-table td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .admin-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+
+        .stat-card p {
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-add:hover {
+            opacity: 0.9;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: #343a40;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">🛍️ MegaStore Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/staff/dashboard.html">📊 Sách</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/staff/laptops_dashboard.html">💻 Laptop</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/staff/mobiles_dashboard.html">📱 Điện Thoại</a>
+                    </li>
+                    <li class="nav-item">
+                        <div id="navbarRight"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alertContainer"></div>
+
+    <div class="container-fluid py-5">
+        <!-- HEADER -->
+        <div class="header-section">
+            <h1>📱 Quản Lý Điện Thoại</h1>
+            <a href="/staff/add_mobile.html" class="btn-add">➕ Thêm Điện Thoại Mới</a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p>Tổng Điện Thoại</p>
+                <h3 id="totalMobiles">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>Tập Hợp</p>
+                <h3 id="totalStock">0</h3>
+            </div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm điện thoại...">
+            <button class="btn btn-primary" onclick="searchMobiles()">🔍 Tìm</button>
+        </div>
+
+        <!-- TABLE -->
+        <div class="admin-table">
+            <table id="mobileTable" class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hãng - Model</th>
+                        <th>Hệ Điều Hành</th>
+                        <th>Cấu Hình</th>
+                        <th>Giá</th>
+                        <th>Kho</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="mobileTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="bg-light text-center py-4 mt-5 border-top">
+        <p class="text-muted">© 2026 MegaStore - Admin Panel</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/staff-common.js"></script>
+    <script>
+        let allMobiles = [];
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            checkStaffAuth();
+            await loadMobiles();
+        });
+
+        async function loadMobiles() {
+            try {
+                const response = await fetch(`${MOBILE_API}/mobiles/`);
+                if (!response.ok) throw new Error('Failed to load mobiles');
+                
+                allMobiles = await response.json();
+                updateStats();
+                renderMobileTable(allMobiles);
+            } catch (error) {
+                showAlert('Lỗi tải điện thoại: ' + error.message, 'danger');
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalMobiles').textContent = allMobiles.length;
+            const totalStock = allMobiles.reduce((sum, m) => sum + (m.stock || 0), 0);
+            document.getElementById('totalStock').textContent = totalStock;
+        }
+
+        function renderMobileTable(mobiles) {
+            const tbody = document.getElementById('mobileTableBody');
+            if (mobiles.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Không có điện thoại</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = mobiles.map(mobile => `
+                <tr>
+                    <td>#${mobile.id}</td>
+                    <td><strong>${mobile.brand} ${mobile.name}</strong><br><small>${mobile.model_name}</small></td>
+                    <td>${mobile.os}</td>
+                    <td><small>${mobile.processor}<br>${mobile.ram} RAM | ${mobile.storage}</small></td>
+                    <td><strong>${formatPrice(mobile.price)}</strong></td>
+                    <td><span class="badge ${mobile.stock > 0 ? 'bg-success' : 'bg-danger'}">${mobile.stock}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/staff/edit_mobile.html?id=${mobile.id}" class="btn btn-sm btn-warning">✏️ Sửa</a>
+                            <button class="btn btn-sm btn-danger" onclick="deleteMobile(${mobile.id})">🗑️ Xóa</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchMobiles() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allMobiles.filter(m =>
+                m.name.toLowerCase().includes(query) ||
+                m.brand.toLowerCase().includes(query) ||
+                m.model_name.toLowerCase().includes(query)
+            );
+            renderMobileTable(filtered);
+        }
+
+        async function deleteMobile(id) {
+            if (!confirm('Bạn chắc chắn muốn xóa điện thoại này?')) return;
+
+            try {
+                const response = await fetch(`${MOBILE_API}/mobiles/${id}/`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Failed to delete');
+
+                showAlert('Xóa điện thoại thành công!', 'success');
+                await loadMobiles();
+            } catch (error) {
+                showAlert('Lỗi xóa điện thoại: ' + error.message, 'danger');
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchMobiles();
+        });
+    </script>
+</body>
+</html>

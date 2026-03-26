@@ -23,7 +23,7 @@ class Command(BaseCommand):
                 'price': 32000000,
                 'stock': 15,
                 'description': 'Latest flagship iPhone with advanced camera system and A17 Pro chip.',
-                'image': 'https://apple.com/images/iphone-15-pro-max.jpg'
+                'image': 'https://images.unsplash.com/photo-1592286927505-1def25e246c0?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Samsung Galaxy S24 Ultra',
@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 'price': 28000000,
                 'stock': 12,
                 'description': 'Premium Android flagship with powerful processor and exceptional camera.',
-                'image': 'https://samsung.com/images/galaxy-s24-ultra.jpg'
+                'image': 'https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Pixel 8 Pro',
@@ -55,7 +55,7 @@ class Command(BaseCommand):
                 'price': 24000000,
                 'stock': 10,
                 'description': 'Google flagship with advanced AI features and excellent computational photography.',
-                'image': 'https://google.com/images/pixel-8-pro.jpg'
+                'image': 'https://images.unsplash.com/photo-1606933248051-5ce98becdc2e?w=500&h=400&fit=crop'
             },
             {
                 'name': 'OnePlus 12',
@@ -71,7 +71,7 @@ class Command(BaseCommand):
                 'price': 18000000,
                 'stock': 14,
                 'description': 'Fast and smooth Android phone with excellent performance.',
-                'image': 'https://oneplus.com/images/oneplus-12.jpg'
+                'image': 'https://images.unsplash.com/photo-1551431009-381d36d3d37d?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Xiaomi 14 Ultra',
@@ -87,7 +87,7 @@ class Command(BaseCommand):
                 'price': 22000000,
                 'stock': 8,
                 'description': 'Chinese flagship with incredible camera setup and high-end specs.',
-                'image': 'https://xiaomi.com/images/xiaomi-14-ultra.jpg'
+                'image': 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&h=400&fit=crop'
             },
             {
                 'name': 'OPPO Find X7',
@@ -103,7 +103,7 @@ class Command(BaseCommand):
                 'price': 20000000,
                 'stock': 10,
                 'description': 'Premium Android phone with exceptional camera and fast charging.',
-                'image': 'https://oppo.com/images/find-x7.jpg'
+                'image': 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Vivo X100 Ultra',
@@ -119,7 +119,7 @@ class Command(BaseCommand):
                 'price': 21000000,
                 'stock': 9,
                 'description': 'Latest Vivo flagship with excellent performance and camera.',
-                'image': 'https://vivo.com/images/x100-ultra.jpg'
+                'image': 'https://images.unsplash.com/photo-1511454576620-ba8a36ffac77?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Realme GT 5 Pro',
@@ -135,7 +135,7 @@ class Command(BaseCommand):
                 'price': 15000000,
                 'stock': 16,
                 'description': 'Value-for-money flagship with solid performance.',
-                'image': 'https://realme.com/images/gt-5-pro.jpg'
+                'image': 'https://images.unsplash.com/photo-1578149102327-636b7834603f?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Samsung Galaxy A54',
@@ -151,7 +151,7 @@ class Command(BaseCommand):
                 'price': 10500000,
                 'stock': 20,
                 'description': 'Mid-range Samsung phone suitable for everyday use.',
-                'image': 'https://samsung.com/images/galaxy-a54.jpg'
+                'image': 'https://images.unsplash.com/photo-1511385643326-ab7782d7ad18?w=500&h=400&fit=crop'
             },
             {
                 'name': 'iPhone 14',
@@ -167,7 +167,7 @@ class Command(BaseCommand):
                 'price': 22000000,
                 'stock': 18,
                 'description': 'Previous generation iPhone still offering great performance and features.',
-                'image': 'https://apple.com/images/iphone-14.jpg'
+                'image': 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=500&h=400&fit=crop'
             }
         ]
 

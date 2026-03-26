@@ -22,7 +22,7 @@ class Command(BaseCommand):
                 'price': 45000000,
                 'stock': 10,
                 'description': 'Professional-grade laptop with exceptional performance and display quality.',
-                'image': 'https://www.apple.com/macbook-pro/images/overview/hero__d4d5f9e7yfej.jpg'
+                'image': 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&h=400&fit=crop'
             },
             {
                 'name': 'XPS 15',
@@ -37,7 +37,7 @@ class Command(BaseCommand):
                 'price': 38000000,
                 'stock': 8,
                 'description': 'Premium Windows laptop with powerful specs and stunning OLED display.',
-                'image': 'https://dell.com/images/products/ddt/xps-15.jpg'
+                'image': 'https://images.unsplash.com/photo-1588872657840-90a53d2b9b44?w=500&h=400&fit=crop'
             },
             {
                 'name': 'IdeaPad Gaming 3',
@@ -52,7 +52,7 @@ class Command(BaseCommand):
                 'price': 18000000,
                 'stock': 15,
                 'description': 'Affordable gaming laptop with great performance for gaming and content creation.',
-                'image': 'https://lenovo.com/images/gaming-3.jpg'
+                'image': 'https://images.unsplash.com/photo-1603302576930-86befbb6239d?w=500&h=400&fit=crop'
             },
             {
                 'name': 'ROG Strix G16',
@@ -67,7 +67,7 @@ class Command(BaseCommand):
                 'price': 42000000,
                 'stock': 6,
                 'description': 'High-end gaming laptop with top-tier performance and immersive display.',
-                'image': 'https://asus.com/images/rog-strix-g16.jpg'
+                'image': 'https://images.unsplash.com/photo-1589524842245-b7124f5d88fd?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Aspire 5 A515-57G',
@@ -82,7 +82,7 @@ class Command(BaseCommand):
                 'price': 15000000,
                 'stock': 12,
                 'description': 'Reliable business laptop with balanced performance and affordability.',
-                'image': 'https://acer.com/images/aspire-5.jpg'
+                'image': 'https://images.unsplash.com/photo-1511707267537-b85faf00021e?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Prestige 14',
@@ -97,7 +97,7 @@ class Command(BaseCommand):
                 'price': 32000000,
                 'stock': 5,
                 'description': 'Ultra-portable professional laptop with excellent battery life.',
-                'image': 'https://msi.com/images/prestige-14.jpg'
+                'image': 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Blade 15',
@@ -112,7 +112,7 @@ class Command(BaseCommand):
                 'price': 48000000,
                 'stock': 4,
                 'description': 'Ultimate gaming laptop with sleek design and powerful performance.',
-                'image': 'https://razer.com/images/blade-15.jpg'
+                'image': 'https://images.unsplash.com/photo-1604788c79f5-1a7e2f06be0d?w=500&h=400&fit=crop'
             },
             {
                 'name': 'ThinkBook Plus',
@@ -127,7 +127,7 @@ class Command(BaseCommand):
                 'price': 20000000,
                 'stock': 8,
                 'description': 'Business-focused laptop with productivity features and premium build.',
-                'image': 'https://lenovo.com/images/thinkbook-plus.jpg'
+                'image': 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Pavilion 15',
@@ -142,7 +142,7 @@ class Command(BaseCommand):
                 'price': 12000000,
                 'stock': 20,
                 'description': 'Budget-friendly laptop suitable for students and everyday computing.',
-                'image': 'https://hp.com/images/pavilion-15.jpg'
+                'image': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=400&fit=crop'
             },
             {
                 'name': 'Swift 5',
@@ -157,7 +157,7 @@ class Command(BaseCommand):
                 'price': 22000000,
                 'stock': 10,
                 'description': 'Ultra-lightweight and portable laptop for professionals on the move.',
-                'image': 'https://acer.com/images/swift-5.jpg'
+                'image': 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=500&h=400&fit=crop'
             }
         ]
 

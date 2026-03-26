@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi tiết sách - BookStore</title>
+    <title>Chi tiết sản phẩm - MegaStore</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/common.css">
 </head>
@@ -11,14 +11,20 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">📚 BookStore</a>
+            <a class="navbar-brand" href="/">🛍️ MegaStore</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/index.html">🏠 Trang Chủ</a>
+                        <a class="nav-link" href="/index.html">📚 Sách</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/laptops.html">💻 Laptop</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/mobiles.html">📱 Điện Thoại</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/cart.html">🛒 Giỏ Hàng<span id="cartCount" class="badge bg-primary ms-2">0</span></a>
@@ -40,83 +46,133 @@
     </div>
 
     <footer class="bg-light text-center py-4 mt-5 border-top">
-        <p class="text-muted">© 2024 BookStore - Cửa hàng sách trực tuyến</p>
+        <p class="text-muted">© 2026 MegaStore - Cửa hàng trực tuyến đa ngành hàng</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/common.js"></script>
     <script>
-        let bookId = null;
-        let bookData = null;
+        let productId = null;
+        let productType = null;
+        let productData = null;
 
         window.addEventListener('DOMContentLoaded', async () => {
-            bookId = getQueryParam('id');
+            productId = getQueryParam('product_id');
+            productType = getQueryParam('type') || 'book';
 
-            if (!bookId) {
+            if (!productId) {
                 document.getElementById('detailContainer').innerHTML = 
-                    '<div class="text-danger text-center py-5">Không tìm thấy sách.</div>';
+                    '<div class="text-danger text-center py-5">Không tìm thấy sản phẩm.</div>';
                 return;
             }
 
-            await loadBookDetail();
+            await loadProductDetail();
             updateCartCount();
         });
 
-        async function loadBookDetail() {
+        async function loadProductDetail() {
             try {
-                bookData = await API.getBookById(bookId);
+                let api;
+                if (productType === 'laptop') {
+                    api = `${LAPTOP_API}/laptops/${productId}/`;
+                } else if (productType === 'mobile') {
+                    api = `${MOBILE_API}/mobiles/${productId}/`;
+                } else {
+                    api = `${BOOK_API}/books/${productId}/`;
+                }
+
+                const response = await fetch(api);
+                if (!response.ok) throw new Error('Không tìm thấy sản phẩm');
+                
+                productData = await response.json();
                 renderDetail();
             } catch (error) {
                 document.getElementById('detailContainer').innerHTML = 
-                    `<div class="text-danger text-center py-5">Lỗi tải sách: ${error.message}</div>`;
+                    `<div class="text-danger text-center py-5">Lỗi tải sản phẩm: ${error.message}</div>`;
             }
         }
 
         function renderDetail() {
-            const stock = bookData.stock || 0;
+            const stock = productData.stock || 0;
             const stockClass = stock === 0 ? 'out-of-stock' : '';
-            const stockText = stock === 0 ? '❌ Hết hàng' : `✅ Còn ${stock} cuốn`;
+            const stockText = stock === 0 ? '❌ Hết hàng' : `✅ Còn ${stock} sản phẩm`;
+            let image = productData.image || productData.cover_image || 'https://via.placeholder.com/400x300?text=Product';
+            
+            let title = '';
+            let subtitle = '';
+            let metaHtml = '';
+
+            if (productType === 'book') {
+                title = productData.title;
+                subtitle = productData.author || 'Tác giả chưa xác định';
+                metaHtml = `
+                    <div><strong>Nhà xuất bản:</strong> ${productData.publisher || 'Chưa xác định'}</div>
+                    <div><strong>Thể loại:</strong> ${productData.genre || 'Chưa xác định'}</div>
+                    <div><strong>Năm:</strong> ${productData.year || 'Chưa xác định'}</div>
+                    <div><strong>Trang:</strong> ${productData.pages || 'Chưa xác định'}</div>
+                    <div><strong>ISBN:</strong> ${productData.isbn || 'Chưa xác định'}</div>
+                `;
+            } else if (productType === 'laptop') {
+                title = `${productData.brand} ${productData.name}`;
+                subtitle = productData.model_name;
+                metaHtml = `
+                    <div><strong>Loại:</strong> ${productData.category}</div>
+                    <div><strong>Processor:</strong> ${productData.processor}</div>
+                    <div><strong>RAM:</strong> ${productData.ram}</div>
+                    <div><strong>Storage:</strong> ${productData.storage}</div>
+                    <div><strong>Display:</strong> ${productData.display}</div>
+                    <div><strong>GPU:</strong> ${productData.gpu || 'Chưa xác định'}</div>
+                `;
+            } else if (productType === 'mobile') {
+                title = `${productData.brand} ${productData.name}`;
+                subtitle = productData.model_name;
+                metaHtml = `
+                    <div><strong>OS:</strong> ${productData.os}</div>
+                    <div><strong>Processor:</strong> ${productData.processor}</div>
+                    <div><strong>RAM:</strong> ${productData.ram}</div>
+                    <div><strong>Storage:</strong> ${productData.storage}</div>
+                    <div><strong>Display:</strong> ${productData.display}</div>
+                    <div><strong>Camera:</strong> ${productData.camera || 'Chưa xác định'}</div>
+                    <div><strong>Pin:</strong> ${productData.battery || 'Chưa xác định'}</div>
+                `;
+            }
 
             const html = `
                 <div class="detail-container">
                     <div class="row">
                         <div class="col-md-4">
                             <div class="detail-image">
-                                ${bookData.cover_image ? `<img src="${bookData.cover_image}" alt="${bookData.title}">` : '📖'}
+                                <img src="${image}" alt="${title}" style="max-width: 100%; border-radius: 8px;">
                             </div>
                         </div>
                         <div class="col-md-8">
                             <div class="detail-info">
-                                <h1>${bookData.title}</h1>
-                                <h3>${bookData.author || 'Tác giả chưa xác định'}</h3>
-                                <div class="detail-price">${formatPrice(bookData.price)}</div>
-                                <div class="detail-stock ${stockClass}">${stockText}</div>
+                                <h1>${title}</h1>
+                                <h3 class="text-muted">${subtitle}</h3>
+                                <div class="detail-price" style="font-size: 28px; color: #e74c3c; font-weight: bold;">${formatPrice(productData.price)}</div>
+                                <div class="detail-stock ${stockClass}" style="font-size: 16px; margin: 10px 0;">${stockText}</div>
 
-                                <div class="detail-meta">
-                                    <div><strong>Nhà xuất bản:</strong> ${bookData.publisher || 'Chưa xác định'}</div>
-                                    <div><strong>Thể loại:</strong> ${bookData.genre || 'Chưa xác định'}</div>
-                                    <div><strong>Năm xuất bản:</strong> ${bookData.year || 'Chưa xác định'}</div>
-                                    <div><strong>Số trang:</strong> ${bookData.pages || 'Chưa xác định'}</div>
-                                    <div><strong>ISBN:</strong> ${bookData.isbn || 'Chưa xác định'}</div>
+                                <div class="detail-meta" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                                    ${metaHtml}
                                 </div>
 
-                                <div class="detail-description">
+                                <div class="detail-description" style="margin: 20px 0;">
                                     <strong>Mô tả:</strong>
-                                    <p>${bookData.description || 'Chưa có mô tả.'}</p>
+                                    <p>${productData.description || 'Chưa có mô tả.'}</p>
                                 </div>
 
-                                <div class="quantity-selector">
-                                    <label><strong>Số lượng:</strong></label>
-                                    <button type="button" onclick="decreaseQuantity()">−</button>
-                                    <input type="number" id="quantity" value="1" min="1" max="${stock || 100}">
-                                    <button type="button" onclick="increaseQuantity()">+</button>
+                                <div class="quantity-selector" style="display: flex; align-items: center; margin: 20px 0;">
+                                    <label style="margin-right: 20px;"><strong>Số lượng:</strong></label>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="decreaseQuantity()">−</button>
+                                    <input type="number" id="quantity" value="1" min="1" max="${stock || 100}" style="width: 80px; text-align: center; margin: 0 10px; padding: 8px;">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="increaseQuantity()">+</button>
                                 </div>
 
-                                <div class="action-buttons">
-                                    <button class="btn btn-primary" onclick="addToCart()" ${stock === 0 ? 'disabled' : ''}>
+                                <div class="action-buttons" style="display: flex; gap: 10px;">
+                                    <button class="btn btn-primary btn-lg" onclick="addToCart()" ${stock === 0 ? 'disabled' : ''}>
                                         🛒 Thêm vào giỏ hàng
                                     </button>
-                                    <button class="btn btn-outline-primary" onclick="window.location.href='/index.html'">
+                                    <button class="btn btn-outline-primary btn-lg" onclick="goBack()">
                                         ← Quay lại
                                     </button>
                                 </div>
@@ -127,6 +183,16 @@
             `;
 
             document.getElementById('detailContainer').innerHTML = html;
+        }
+
+        function goBack() {
+            if (productType === 'laptop') {
+                window.location.href = '/laptops.html';
+            } else if (productType === 'mobile') {
+                window.location.href = '/mobiles.html';
+            } else {
+                window.location.href = '/index.html';
+            }
         }
 
         function decreaseQuantity() {
@@ -151,27 +217,26 @@
             const quantity = parseInt(document.getElementById('quantity').value);
 
             if (!customerId) {
-                showAlert('Vui lòng đăng nhập trước!', 'error');
+                showAlert('Vui lòng đăng nhập trước!', 'danger');
                 return;
             }
 
             try {
                 const btn = event.target;
                 btn.disabled = true;
-                btn.innerHTML = '<span class="spinner"></span> Đang thêm...';
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang thêm...';
 
-                await API.addToCart(customerId, bookId, quantity, bookData.price);
+                await API.addToCart(customerId, productId, quantity, productData.price);
 
-                showAlert(`Đã thêm ${quantity} cuốn "${bookData.title}" vào giỏ hàng!`, 'success');
+                showAlert(`Đã thêm ${quantity} "${productData.title || productData.name}" vào giỏ hàng!`, 'success');
                 updateCartCount();
 
-                // Reset quantity
                 document.getElementById('quantity').value = 1;
                 btn.disabled = false;
                 btn.innerHTML = '🛒 Thêm vào giỏ hàng';
 
             } catch (error) {
-                showAlert(error.message || 'Thêm vào giỏ hàng thất bại!', 'error');
+                showAlert(error.message || 'Thêm vào giỏ hàng thất bại!', 'danger');
                 const btn = event.target;
                 btn.disabled = false;
                 btn.innerHTML = '🛒 Thêm vào giỏ hàng';

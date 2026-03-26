@@ -94,6 +94,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:8003',
     'http://localhost:8004',
     'http://localhost:8005',
+    'http://localhost:8006',
+    'http://localhost:8007',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True

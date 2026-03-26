@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Laptop - MegaStore Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .admin-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .admin-table table {
+            margin-bottom: 0;
+        }
+
+        .admin-table thead {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .admin-table th {
+            padding: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .admin-table td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .admin-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .header-section h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+
+        .stat-card p {
+            color: #6c757d;
+            margin: 0;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-add:hover {
+            opacity: 0.9;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: #343a40;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">🛍️ MegaStore Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/staff/dashboard.html">📊 Sách</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/staff/laptops_dashboard.html">💻 Laptop</a>
+                    </li>
+                    <li class="nav-item">
+                        <div id="navbarRight"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alertContainer"></div>
+
+    <div class="container-fluid py-5">
+        <!-- HEADER -->
+        <div class="header-section">
+            <h1>💻 Quản Lý Laptop</h1>
+            <a href="/staff/add_laptop.html" class="btn-add">➕ Thêm Laptop Mới</a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p>Tổng Laptop</p>
+                <h3 id="totalLaptops">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>Tập Hợp</p>
+                <h3 id="totalStock">0</h3>
+            </div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm laptop...">
+            <button class="btn btn-primary" onclick="searchLaptops()">🔍 Tìm</button>
+        </div>
+
+        <!-- TABLE -->
+        <div class="admin-table">
+            <table id="laptopTable" class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hãng - Model</th>
+                        <th>Danh Mục</th>
+                        <th>Cấu Hình</th>
+                        <th>Giá</th>
+                        <th>Kho</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="laptopTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="bg-light text-center py-4 mt-5 border-top">
+        <p class="text-muted">© 2026 MegaStore - Admin Panel</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/staff-common.js"></script>
+    <script>
+        let allLaptops = [];
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            checkStaffAuth();
+            await loadLaptops();
+        });
+
+        async function loadLaptops() {
+            try {
+                const response = await fetch(`${LAPTOP_API}/laptops/`);
+                if (!response.ok) throw new Error('Failed to load laptops');
+                
+                allLaptops = await response.json();
+                updateStats();
+                renderLaptopTable(allLaptops);
+            } catch (error) {
+                showAlert('Lỗi tải laptop: ' + error.message, 'danger');
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalLaptops').textContent = allLaptops.length;
+            const totalStock = allLaptops.reduce((sum, l) => sum + (l.stock || 0), 0);
+            document.getElementById('totalStock').textContent = totalStock;
+        }
+
+        function renderLaptopTable(laptops) {
+            const tbody = document.getElementById('laptopTableBody');
+            if (laptops.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Không có laptop</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = laptops.map(laptop => `
+                <tr>
+                    <td>#${laptop.id}</td>
+                    <td><strong>${laptop.brand} ${laptop.name}</strong><br><small>${laptop.model_name}</small></td>
+                    <td>${laptop.category}</td>
+                    <td><small>${laptop.processor}<br>${laptop.ram} RAM | ${laptop.storage}</small></td>
+                    <td><strong>${formatPrice(laptop.price)}</strong></td>
+                    <td><span class="badge ${laptop.stock > 0 ? 'bg-success' : 'bg-danger'}">${laptop.stock}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/staff/edit_laptop.html?id=${laptop.id}" class="btn btn-sm btn-warning">✏️ Sửa</a>
+                            <button class="btn btn-sm btn-danger" onclick="deleteLaptop(${laptop.id})">🗑️ Xóa</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchLaptops() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allLaptops.filter(l =>
+                l.name.toLowerCase().includes(query) ||
+                l.brand.toLowerCase().includes(query) ||
+                l.model_name.toLowerCase().includes(query)
+            );
+            renderLaptopTable(filtered);
+        }
+
+        async function deleteLaptop(id) {
+            if (!confirm('Bạn chắc chắn muốn xóa laptop này?')) return;
+
+            try {
+                const response = await fetch(`${LAPTOP_API}/laptops/${id}/`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Failed to delete');
+
+                showAlert('Xóa laptop thành công!', 'success');
+                await loadLaptops();
+            } catch (error) {
+                showAlert('Lỗi xóa laptop: ' + error.message, 'danger');
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchLaptops();
+        });
+    </script>
+</body>
+</html>

@@ -4,6 +4,9 @@
  */
 
 const API_BASE = 'http://localhost:8000/api';
+const BOOK_API = 'http://localhost:8001/api';
+const LAPTOP_API = 'http://localhost:8006/api';
+const MOBILE_API = 'http://localhost:8007/api';
 const CUSTOMER_API = 'http://localhost:8002/api';
 
 // ============ TOKEN MANAGEMENT ============

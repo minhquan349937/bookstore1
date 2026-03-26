@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Laptop Mới - MegaStore Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .form-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 700px;
+            margin: 30px auto;
+        }
+
+        .form-card h2 {
+            margin-bottom: 30px;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .form-section h5 {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: #343a40;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">🛍️ MegaStore Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/staff/dashboard.html">📊 Sách</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/staff/laptops_dashboard.html">💻 Laptop</a>
+                    </li>
+                    <li class="nav-item">
+                        <div id="navbarRight"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alertContainer"></div>
+
+    <div class="form-card">
+        <h2>➕ Thêm Laptop Mới</h2>
+        <form id="addLaptopForm">
+            <!-- Thông tin cơ bản -->
+            <div class="form-section">
+                <h5>💻 Thông Tin Cơ Bản</h5>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label">Hãng *</label>
+                        <select id="brand" class="form-select" required>
+                            <option value="">-- Chọn hãng --</option>
+                            <option value="Apple">Apple</option>
+                            <option value="Dell">Dell</option>
+                            <option value="HP">HP</option>
+                            <option value="Lenovo">Lenovo</option>
+                            <option value="ASUS">ASUS</option>
+                            <option value="Acer">Acer</option>
+                            <option value="MSI">MSI</option>
+                            <option value="Razer">Razer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tên Laptop *</label>
+                        <input type="text" id="name" class="form-control" placeholder="VD: MacBook Pro 16" required>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label">Model *</label>
+                        <input type="text" id="model_name" class="form-control" placeholder="VD: MacBook Pro 16-inch 2023" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Danh Mục *</label>
+                        <select id="category" class="form-select" required>
+                            <option value="">-- Chọn danh mục --</option>
+                            <option value="Gaming">Gaming</option>
+                            <option value="Ultrabook">Ultrabook</option>
+                            <option value="Business">Business</option>
+                            <option value="Student">Student</option>
+                            <option value="Workstation">Workstation</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cấu hình -->
+            <div class="form-section">
+                <h5>⚙️ Cấu Hình Kỹ Thuật</h5>
+                <div class="form-group">
+                    <label class="form-label">Processor *</label>
+                    <input type="text" id="processor" class="form-control" placeholder="VD: Intel Core i9-13900H" required>
+                </div>
+
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label class="form-label">RAM *</label>
+                        <input type="text" id="ram" class="form-control" placeholder="VD: 32GB DDR5" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Storage *</label>
+                        <input type="text" id="storage" class="form-control" placeholder="VD: 1TB NVMe SSD" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Display *</label>
+                        <input type="text" id="display" class="form-control" placeholder="VD: 16-inch OLED" required>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label">GPU (tuỳ chọn)</label>
+                        <input type="text" id="gpu" class="form-control" placeholder="VD: NVIDIA RTX 4090">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">URL Ảnh (tuỳ chọn)</label>
+                        <input type="url" id="image" class="form-control" placeholder="https://...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Giá & Hàng -->
+            <div class="form-section">
+                <h5>💰 Giá & Kho Hàng</h5>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label">Giá (VNĐ) *</label>
+                        <input type="number" id="price" class="form-control" placeholder="VD: 45000000" required min="0" step="100000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số lượng tồn kho *</label>
+                        <input type="number" id="stock" class="form-control" placeholder="VD: 10" required min="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="form-section">
+                <h5>📝 Mô Tả</h5>
+                <div class="form-group">
+                    <label class="form-label">Mô tả chi tiết (tuỳ chọn)</label>
+                    <textarea id="description" class="form-control" rows="4" placeholder="Nhập mô tả laptop..."></textarea>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn-submit" id="submitBtn">✓ Thêm Laptop</button>
+                <a href="/staff/laptops_dashboard.html" class="btn-cancel">← Hủy</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/staff-common.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            checkStaffAuth();
+        });
+
+        document.getElementById('addLaptopForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const laptopData = {
+                name: document.getElementById('name').value,
+                brand: document.getElementById('brand').value,
+                model_name: document.getElementById('model_name').value,
+                category: document.getElementById('category').value,
+                processor: document.getElementById('processor').value,
+                ram: document.getElementById('ram').value,
+                storage: document.getElementById('storage').value,
+                display: document.getElementById('display').value,
+                gpu: document.getElementById('gpu').value || '',
+                price: parseFloat(document.getElementById('price').value),
+                stock: parseInt(document.getElementById('stock').value),
+                description: document.getElementById('description').value || '',
+                image: document.getElementById('image').value || ''
+            };
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang thêm...';
+
+            try {
+                const response = await fetch(`${LAPTOP_API}/laptops/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(laptopData)
+                });
+
+                if (!response.ok) throw new Error('Thêm laptop thất bại');
+
+                showAlert('Thêm laptop thành công!', 'success');
+                setTimeout(() => window.location.href = '/staff/laptops_dashboard.html', 1500);
+
+            } catch (error) {
+                showAlert(error.message || 'Thêm laptop thất bại!', 'danger');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '✓ Thêm Laptop';
+            }
+        });
+    </script>
+</body>
+</html>

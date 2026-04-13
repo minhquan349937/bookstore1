@@ -145,6 +145,9 @@
                         <a class="nav-link active" href="/staff/laptops_dashboard.html">💻 Laptop</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="/staff/mobiles_dashboard.html">📱 Điện Thoại</a>
+                    </li>
+                    <li class="nav-item">
                         <div id="navbarRight"></div>
                     </li>
                 </ul>
@@ -159,19 +162,24 @@
         <div class="header-section" style="color: white;">
             <div>
                 <h1 style="color: white;">💻 Quản Lý Laptop</h1>
+                <p style="margin: 0; color: white;">Danh sách toàn bộ laptop trong kho</p>
             </div>
             <a href="/staff/add_laptop.html" class="btn-add">➕ Thêm Laptop Mới</a>
         </div>
 
         <!-- STATS -->
-        <div class="stats-grid">
+        <div class="stats-grid" id="statsContainer">
             <div class="stat-card">
                 <p>Tổng Laptop</p>
                 <h3 id="totalLaptops">0</h3>
             </div>
             <div class="stat-card">
-                <p>Tập Hợp</p>
+                <p>Tổng Kho</p>
                 <h3 id="totalStock">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>Hết hàng</p>
+                <h3 id="outOfStock">0</h3>
             </div>
         </div>
 
@@ -179,32 +187,14 @@
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Tìm kiếm laptop...">
             <button class="btn btn-primary" onclick="searchLaptops()">🔍 Tìm</button>
+            <button class="btn btn-outline-secondary" onclick="resetSearch()">Xóa</button>
         </div>
 
         <!-- TABLE -->
-        <div class="admin-table">
-            <table id="laptopTable" class="table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Hãng - Model</th>
-                        <th>Danh Mục</th>
-                        <th>Cấu Hình</th>
-                        <th>Giá</th>
-                        <th>Kho</th>
-                        <th>Hành Động</th>
-                    </tr>
-                </thead>
-                <tbody id="laptopTableBody">
-                    <tr>
-                        <td colspan="7" class="text-center">
-                            <div class="spinner-border" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div id="laptopsContainer" class="admin-table">
+            <div class="loading-container" style="min-height: 300px;">
+                <div class="spinner"></div>
+            </div>
         </div>
     </div>
 
@@ -224,6 +214,9 @@
         });
 
         async function loadLaptops() {
+            const container = document.getElementById('laptopsContainer');
+            container.innerHTML = '<div class="loading-container" style="min-height: 300px;"><div class="spinner"></div></div>';
+
             try {
                 console.log('Loading laptops from:', `${LAPTOP_API}/laptops/`);
                 const response = await fetch(`${LAPTOP_API}/laptops/`);
@@ -235,52 +228,96 @@
                 renderLaptopTable(allLaptops);
             } catch (error) {
                 console.error('Error loading laptops:', error);
-                showAlert('Lỗi tải laptop: ' + error.message, 'danger');
-                // Show empty state
-                const tbody = document.getElementById('laptopTableBody');
-                if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center">Không thể tải dữ liệu</td></tr>';
+                container.innerHTML = `<div class="text-danger text-center py-5">Lỗi tải laptop: ${error.message}</div>`;
             }
         }
 
         function updateStats() {
             document.getElementById('totalLaptops').textContent = allLaptops.length;
             const totalStock = allLaptops.reduce((sum, l) => sum + (l.stock || 0), 0);
+            const outOfStock = allLaptops.filter(l => l.stock === 0).length;
+            
             document.getElementById('totalStock').textContent = totalStock;
+            document.getElementById('outOfStock').textContent = outOfStock;
         }
 
         function renderLaptopTable(laptops) {
-            const tbody = document.getElementById('laptopTableBody');
+            const container = document.getElementById('laptopsContainer');
+            
             if (laptops.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Không có laptop</td></tr>';
+                container.innerHTML = '<div class="text-center text-muted py-5">Không có laptop nào trong hệ thống.</div>';
                 return;
             }
 
-            tbody.innerHTML = laptops.map(laptop => `
-                <tr>
-                    <td>#${laptop.id}</td>
-                    <td><strong>${laptop.brand} ${laptop.name}</strong><br><small>${laptop.model_name}</small></td>
-                    <td>${laptop.category}</td>
-                    <td><small>${laptop.processor}<br>${laptop.ram} RAM | ${laptop.storage}</small></td>
-                    <td><strong>${formatPrice(laptop.price)}</strong></td>
-                    <td><span class="badge ${laptop.stock > 0 ? 'bg-success' : 'bg-danger'}">${laptop.stock}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="/staff/edit_laptop.html?id=${laptop.id}" class="btn btn-sm btn-warning">✏️ Sửa</a>
-                            <button class="btn btn-sm btn-danger" onclick="deleteLaptop(${laptop.id})">🗑️ Xóa</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            let html = `
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">ID</th>
+                            <th style="width: 20%;">Hãng - Model</th>
+                            <th style="width: 15%;">Danh Mục</th>
+                            <th style="width: 15%;">Cấu Hình</th>
+                            <th style="width: 12%;">Giá</th>
+                            <th style="width: 10%;">Kho</th>
+                            <th style="width: 23%;">Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            laptops.forEach(laptop => {
+                const stockClass = laptop.stock === 0 ? 'text-danger fw-bold' : '';
+                const stockText = laptop.stock === 0 ? '❌ Hết hàng' : `📦 ${laptop.stock}`;
+
+                html += `
+                    <tr>
+                        <td>#${laptop.id}</td>
+                        <td><strong>${laptop.brand} ${laptop.name}</strong><br><small>${laptop.model_name}</small></td>
+                        <td>${laptop.category}</td>
+                        <td><small>${laptop.processor}<br>${laptop.ram} RAM | ${laptop.storage}</small></td>
+                        <td><strong>${formatPrice(laptop.price)}</strong></td>
+                        <td class="${stockClass}">${stockText}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/staff/edit_laptop.html?id=${laptop.id}" class="btn btn-sm btn-warning">✏️ Sửa</a>
+                                <button class="btn btn-sm btn-danger" onclick="deleteLaptop(${laptop.id})">🗑️ Xóa</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
         }
 
         function searchLaptops() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!query) {
+                renderLaptopTable(allLaptops);
+                return;
+            }
+
             const filtered = allLaptops.filter(l =>
                 l.name.toLowerCase().includes(query) ||
                 l.brand.toLowerCase().includes(query) ||
-                l.model_name.toLowerCase().includes(query)
+                l.model_name.toLowerCase().includes(query) ||
+                l.category.toLowerCase().includes(query)
             );
+
+            if (filtered.length === 0) {
+                document.getElementById('laptopsContainer').innerHTML = 
+                    '<div class="text-center text-muted py-5">Không tìm thấy laptop nào.</div>';
+                return;
+            }
+
             renderLaptopTable(filtered);
+        }
+
+        function resetSearch() {
+            document.getElementById('searchInput').value = '';
+            renderLaptopTable(allLaptops);
         }
 
         async function deleteLaptop(id) {
@@ -300,8 +337,10 @@
             }
         }
 
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchLaptops();
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchLaptops();
+            });
         });
     </script>
 </body>

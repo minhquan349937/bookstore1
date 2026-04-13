@@ -160,19 +160,26 @@
     <div class="container-fluid py-5">
         <!-- HEADER -->
         <div class="header-section" style="color: white;">
-            <h1 style="color: white;">📱 Quản Lý Điện Thoại</h1>
+            <div>
+                <h1 style="color: white;">📱 Quản Lý Điện Thoại</h1>
+                <p style="margin: 0; color: white;">Danh sách toàn bộ điện thoại trong kho</p>
+            </div>
             <a href="/staff/add_mobile.html" class="btn-add">➕ Thêm Điện Thoại Mới</a>
         </div>
 
         <!-- STATS -->
-        <div class="stats-grid">
+        <div class="stats-grid" id="statsContainer">
             <div class="stat-card">
                 <p>Tổng Điện Thoại</p>
                 <h3 id="totalMobiles">0</h3>
             </div>
             <div class="stat-card">
-                <p>Tập Hợp</p>
+                <p>Tổng Kho</p>
                 <h3 id="totalStock">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>Hết hàng</p>
+                <h3 id="outOfStock">0</h3>
             </div>
         </div>
 
@@ -180,32 +187,14 @@
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Tìm kiếm điện thoại...">
             <button class="btn btn-primary" onclick="searchMobiles()">🔍 Tìm</button>
+            <button class="btn btn-outline-secondary" onclick="resetSearch()">Xóa</button>
         </div>
 
         <!-- TABLE -->
-        <div class="admin-table">
-            <table id="mobileTable" class="table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Hãng - Model</th>
-                        <th>Hệ Điều Hành</th>
-                        <th>Cấu Hình</th>
-                        <th>Giá</th>
-                        <th>Kho</th>
-                        <th>Hành Động</th>
-                    </tr>
-                </thead>
-                <tbody id="mobileTableBody">
-                    <tr>
-                        <td colspan="7" class="text-center">
-                            <div class="spinner-border" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div id="mobilesContainer" class="admin-table">
+            <div class="loading-container" style="min-height: 300px;">
+                <div class="spinner"></div>
+            </div>
         </div>
     </div>
 
@@ -225,6 +214,9 @@
         });
 
         async function loadMobiles() {
+            const container = document.getElementById('mobilesContainer');
+            container.innerHTML = '<div class="loading-container" style="min-height: 300px;"><div class="spinner"></div></div>';
+
             try {
                 const response = await fetch(`${MOBILE_API}/mobiles/`);
                 if (!response.ok) throw new Error('Failed to load mobiles');
@@ -233,49 +225,97 @@
                 updateStats();
                 renderMobileTable(allMobiles);
             } catch (error) {
-                showAlert('Lỗi tải điện thoại: ' + error.message, 'danger');
+                console.error('Error loading mobiles:', error);
+                container.innerHTML = `<div class="text-danger text-center py-5">Lỗi tải điện thoại: ${error.message}</div>`;
             }
         }
 
         function updateStats() {
             document.getElementById('totalMobiles').textContent = allMobiles.length;
             const totalStock = allMobiles.reduce((sum, m) => sum + (m.stock || 0), 0);
+            const outOfStock = allMobiles.filter(m => m.stock === 0).length;
+            
             document.getElementById('totalStock').textContent = totalStock;
+            document.getElementById('outOfStock').textContent = outOfStock;
         }
 
         function renderMobileTable(mobiles) {
-            const tbody = document.getElementById('mobileTableBody');
+            const container = document.getElementById('mobilesContainer');
+            
             if (mobiles.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Không có điện thoại</td></tr>';
+                container.innerHTML = '<div class="text-center text-muted py-5">Không có điện thoại nào trong hệ thống.</div>';
                 return;
             }
 
-            tbody.innerHTML = mobiles.map(mobile => `
-                <tr>
-                    <td>#${mobile.id}</td>
-                    <td><strong>${mobile.brand} ${mobile.name}</strong><br><small>${mobile.model_name}</small></td>
-                    <td>${mobile.os}</td>
-                    <td><small>${mobile.processor}<br>${mobile.ram} RAM | ${mobile.storage}</small></td>
-                    <td><strong>${formatPrice(mobile.price)}</strong></td>
-                    <td><span class="badge ${mobile.stock > 0 ? 'bg-success' : 'bg-danger'}">${mobile.stock}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="/staff/edit_mobile.html?id=${mobile.id}" class="btn btn-sm btn-warning">✏️ Sửa</a>
-                            <button class="btn btn-sm btn-danger" onclick="deleteMobile(${mobile.id})">🗑️ Xóa</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            let html = `
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">ID</th>
+                            <th style="width: 20%;">Hãng - Model</th>
+                            <th style="width: 15%;">Hệ Điều Hành</th>
+                            <th style="width: 15%;">Cấu Hình</th>
+                            <th style="width: 12%;">Giá</th>
+                            <th style="width: 10%;">Kho</th>
+                            <th style="width: 23%;">Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            mobiles.forEach(mobile => {
+                const stockClass = mobile.stock === 0 ? 'text-danger fw-bold' : '';
+                const stockText = mobile.stock === 0 ? '❌ Hết hàng' : `📦 ${mobile.stock}`;
+
+                html += `
+                    <tr>
+                        <td>#${mobile.id}</td>
+                        <td><strong>${mobile.brand} ${mobile.name}</strong><br><small>${mobile.model_name}</small></td>
+                        <td>${mobile.os}</td>
+                        <td><small>${mobile.processor}<br>${mobile.ram} RAM | ${mobile.storage}</small></td>
+                        <td><strong>${formatPrice(mobile.price)}</strong></td>
+                        <td class="${stockClass}">${stockText}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/staff/edit_mobile.html?id=${mobile.id}" class="btn btn-sm btn-warning">✏️ Sửa</a>
+                                <button class="btn btn-sm btn-danger" onclick="deleteMobile(${mobile.id})">🗑️ Xóa</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
         }
 
         function searchMobiles() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!query) {
+                renderMobileTable(allMobiles);
+                return;
+            }
+
             const filtered = allMobiles.filter(m =>
                 m.name.toLowerCase().includes(query) ||
                 m.brand.toLowerCase().includes(query) ||
-                m.model_name.toLowerCase().includes(query)
+                m.model_name.toLowerCase().includes(query) ||
+                m.os.toLowerCase().includes(query)
             );
+
+            if (filtered.length === 0) {
+                document.getElementById('mobilesContainer').innerHTML = 
+                    '<div class="text-center text-muted py-5">Không tìm thấy điện thoại nào.</div>';
+                return;
+            }
+
             renderMobileTable(filtered);
+        }
+
+        function resetSearch() {
+            document.getElementById('searchInput').value = '';
+            renderMobileTable(allMobiles);
         }
 
         async function deleteMobile(id) {
@@ -295,8 +335,10 @@
             }
         }
 
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchMobiles();
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchMobiles();
+            });
         });
     </script>
 </body>
